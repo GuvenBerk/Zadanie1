@@ -1,4 +1,4 @@
-const API_URL = window.location.origin + '/zadania';
+const API_URL = 'https://zadanie1-1fwg.onrender.com/zadania';
 const taskForm = document.getElementById('taskForm');
 const taskList = document.getElementById('tasks');
 
