@@ -1,126 +1,128 @@
-const API_URL = 'https://zadanie1-1fwg.onrender.com/zadania';
-const taskForm = document.getElementById('taskForm');
-const taskList = document.getElementById('tasks');
+const express = require('express');
+const cors = require('cors');
+const { Client } = require('pg');
+const path = require('path');
 
-document.addEventListener('DOMContentLoaded', loadTasks);
+const app = express();
+const port = process.env.PORT || 3000;
 
-taskForm.addEventListener('submit', function (event) {
-    event.preventDefault();
-
-    const taskData = {
-        tytul: document.getElementById('tytul').value,
-        opis: document.getElementById('opis').value,
-        termin: document.getElementById('termin').value,
-        priorytet: document.getElementById('priorytet').value,
-        status: document.getElementById('status').value
-    };
-
-    const taskId = document.getElementById('taskId')?.value;
-    if (taskId) {
-        updateTask(taskId, taskData);
-    } else {
-        createTask(taskData);
-    }
+const client = new Client({
+  connectionString: process.env.DATABASE_URL || 'postgresql://zadanie1_user:Y9fVQzpYFGyE6IpmbWfbuRFxlp9ncoGa@dpg-d3pqvr2li9vc73br046g-a/zadanie1',
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
-function createTask(taskData) {
-    fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskData)
+client.connect()
+  .then(() => console.log('Połączono z PostgreSQL'))
+  .catch(err => console.error('Błąd połączenia z PostgreSQL:', err));
+
+const createTableQuery = `
+  CREATE TABLE IF NOT EXISTS zadania (
+    id SERIAL PRIMARY KEY,
+    tytul VARCHAR(255) NOT NULL,
+    opis TEXT,
+    termin DATE,
+    priorytet INTEGER,
+    status VARCHAR(50)
+  );
+`;
+
+client.query(createTableQuery)
+  .then(() => console.log('Tabela zadania utworzona'))
+  .catch(err => console.error('Błąd tworzenia tabeli:', err));
+
+// CORS AYARI - BURAYI DEĞİŞTİR:
+app.use(cors({
+  origin: [
+    'https://stellular-hummingbird-42fd28.netlify.app',
+    'https://zadanie1-1fwg.onrender.com',
+    'http://localhost:3000'
+  ],
+  credentials: true
+}));
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+
+app.get('/zadania', (req, res) => {
+  client.query('SELECT * FROM zadania ORDER BY id DESC')
+    .then(result => res.json({ zadania: result.rows }))
+    .catch(error => res.status(500).json({ error: error.message }));
+});
+
+app.get('/zadania/:id', (req, res) => {
+  const id = req.params.id;
+  client.query('SELECT * FROM zadania WHERE id = $1', [id])
+    .then(result => {
+      if (result.rows.length === 0) {
+        res.status(404).json({ error: 'Zadanie nie znalezione' });
+        return;
+      }
+      res.json({ zadanie: result.rows[0] });
     })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Zadanie utworzone:', data);
-            taskForm.reset();
-            loadTasks();
-        })
-        .catch(error => console.error('Błąd:', error));
-}
+    .catch(error => res.status(500).json({ error: error.message }));
+});
 
-function loadTasks() {
-    fetch(API_URL)
-        .then(response => response.json())
-        .then(data => {
-            displayTasks(data.zadania);
-        })
-        .catch(error => console.error('Błąd ładowania zadań:', error));
-}
+app.post('/zadania', (req, res) => {
+  const { tytul, opis, termin, priorytet, status } = req.body;
+  
+  if (!tytul) {
+    return res.status(400).json({ error: 'Tytuł jest wymagany.' });
+  }
 
-function displayTasks(zadania) {
-    taskList.innerHTML = '';
-    zadania.forEach(zadanie => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <strong>${zadanie.tytul}</strong> - ${zadanie.status} <br>
-            <small>Opis: ${zadanie.opis || 'Brak'}</small> <br>
-            <small>Termin: ${zadanie.termin || 'Nie określono'}</small> <br>
-            <small>Priorytet: ${getPriorityText(zadanie.priorytet)}</small> <br>
-            <button class="edit" onclick="editTask(${zadanie.id})">Edytuj</button>
-            <button onclick="deleteTask(${zadanie.id})">Usuń</button>
-        `;
-        taskList.appendChild(li);
-    });
-}
+  client.query(
+    'INSERT INTO zadania (tytul, opis, termin, priorytet, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [tytul, opis, termin, priorytet, status]
+  )
+  .then(result => res.status(201).json({
+    message: 'Zadanie utworzone pomyślnie',
+    zadanieId: result.rows[0].id,
+    zadanie: result.rows[0]
+  }))
+  .catch(error => res.status(500).json({ error: error.message }));
+});
 
-function getPriorityText(priorytet) {
-    const priorities = { 1: 'Niski', 2: 'Średni', 3: 'Wysoki' };
-    return priorities[priorytet] || 'Nieokreślony';
-}
+app.put('/zadania/:id', (req, res) => {
+  const id = req.params.id;
+  const { tytul, opis, termin, priorytet, status } = req.body;
 
-function deleteTask(id) {
-    if (confirm('Czy na pewno chcesz usunąć to zadanie?')) {
-        fetch(`${API_URL}/${id}`, { method: 'DELETE' })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Odpowiedź usuwania:', data);
-                loadTasks();
-            })
-            .catch(error => console.error('Błąd usuwania:', error));
+  if (!tytul) {
+    return res.status(400).json({ error: 'Tytuł jest wymagany.' });
+  }
+
+  client.query(
+    'UPDATE zadania SET tytul = $1, opis = $2, termin = $3, priorytet = $4, status = $5 WHERE id = $6 RETURNING *',
+    [tytul, opis, termin, priorytet, status, id]
+  )
+  .then(result => {
+    if (result.rows.length === 0) {
+      res.status(404).json({ error: 'Zadanie do aktualizacji nie znalezione' });
+      return;
     }
-}
+    res.json({ message: 'Zadanie zaktualizowane pomyślnie', zadanie: result.rows[0] });
+  })
+  .catch(error => res.status(500).json({ error: error.message }));
+});
 
-function editTask(id) {
-    fetch(`${API_URL}/${id}`)
-        .then(response => response.json())
-        .then(data => {
-            const zadanie = data.zadanie;
-            document.getElementById('tytul').value = zadanie.tytul;
-            document.getElementById('opis').value = zadanie.opis || '';
-            document.getElementById('termin').value = zadanie.termin || '';
-            document.getElementById('priorytet').value = zadanie.priorytet;
-            document.getElementById('status').value = zadanie.status;
-
-            let idField = document.getElementById('taskId');
-            if (!idField) {
-                idField = document.createElement('input');
-                idField.type = 'hidden';
-                idField.id = 'taskId';
-                taskForm.appendChild(idField);
-            }
-            idField.value = zadanie.id;
-
-            taskForm.querySelector('button[type="submit"]').textContent = 'Aktualizuj Zadanie';
-        })
-        .catch(error => console.error('Błąd pobierania zadania:', error));
-}
-
-function updateTask(id, taskData) {
-    fetch(`${API_URL}/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskData)
+app.delete('/zadania/:id', (req, res) => {
+  const id = req.params.id;
+  
+  client.query('DELETE FROM zadania WHERE id = $1 RETURNING *', [id])
+    .then(result => {
+      if (result.rows.length === 0) {
+        res.status(404).json({ error: 'Zadanie do usunięcia nie znalezione' });
+        return;
+      }
+      res.json({ message: 'Zadanie usunięte pomyślnie' });
     })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Odpowiedź aktualizacji:', data);
-            taskForm.reset();
-            const submitButton = taskForm.querySelector('button[type="submit"]');
-            submitButton.textContent = 'Zapisz Zadanie';
-            const idField = document.getElementById('taskId');
-            if (idField) idField.remove();
+    .catch(error => res.status(500).json({ error: error.message }));
+});
 
-            loadTasks();
-        })
-        .catch(error => console.error('Błąd aktualizacji:', error));
-}
+app.listen(port, () => {
+  console.log(`Serwer API działa na porcie ${port}`);
+});
