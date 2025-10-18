@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { Client } = require('pg');
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,6 +34,12 @@ client.query(createTableQuery)
 
 app.use(cors());
 app.use(express.json());
+
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
 
 app.get('/zadania', (req, res) => {
   client.query('SELECT * FROM zadania ORDER BY id DESC')
