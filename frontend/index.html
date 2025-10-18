@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menadżer Zadań</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Menadżer Zadań</h1>
+
+        <form id="taskForm">
+            <h2>Dodaj Nowe Zadanie</h2>
+            <input type="text" id="tytul" placeholder="Tytuł zadania" required>
+            <textarea id="opis" placeholder="Opis"></textarea>
+            <input type="date" id="termin">
+            <select id="priorytet">
+                <option value="">Wybierz priorytet</option>
+                <option value="1">Niski</option>
+                <option value="2">Średni</option>
+                <option value="3">Wysoki</option>
+            </select>
+            <select id="status">
+                <option value="">Wybierz status</option>
+                <option value="do zrobienia">Do zrobienia</option>
+                <option value="w trakcie">W trakcie</option>
+                <option value="zakończone">Zakończone</option>
+            </select>
+            <button type="submit">Zapisz Zadanie</button>
+        </form>
+
+        <div id="taskList">
+            <h2>Moje Zadania</h2>
+            <ul id="tasks"></ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
