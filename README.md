@@ -15,4 +15,4 @@ Prosta aplikacja do zarządzania zadaniami.
 1. Pobierz projekt
 2. Otwórz terminal w folderze `backend`
 3. Zainstaluj zależności:
-   ```bash https://stellular-hummingbird-42fd28.netlify.app/
+https://stellular-hummingbird-42fd28.netlify.app/
