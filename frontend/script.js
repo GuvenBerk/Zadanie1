@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/zadania';
+const API_URL = window.location.origin + '/zadania';
 const taskForm = document.getElementById('taskForm');
 const taskList = document.getElementById('tasks');
 
