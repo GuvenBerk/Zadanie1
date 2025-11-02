@@ -5,7 +5,6 @@ Menadżer Zadań z Autoryzacją
 Zaawansowany menedżer zadań z pełnym systemem uwierzytelniania i autoryzacji użytkowników. Aplikacja umożliwia bezpieczne zarządzanie zadaniami z podziałem na użytkowników.
 
 
-🚀 Live Demo
 
 🌐 Adres URL: https://zadanie1-auth.onrender.com
 
