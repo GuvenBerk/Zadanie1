@@ -1,46 +1,47 @@
 const express = require('express');
 const cors = require('cors');
+const { Client } = require('pg');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const sqlite3 = require('sqlite3').verbose();
-const { open } = require('sqlite');
 
 const app = express();
 const port = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'tajny_klucz_jwt';
 
-let db;
+const client = new Client({
+  connectionString: process.env.DATABASE_URL || 'postgresql://zadanie1_user:Y9fVQzpYFGyE6IpmbWfbuRFxlp9ncoGa@dpg-d3pqvr2li9vc73br046g-a/zadanie1',
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
-async function initializeDatabase() {
-  db = await open({
-    filename: './database.sqlite',
-    driver: sqlite3.Database
-  });
+client.connect()
+  .then(() => console.log('Połączono z PostgreSQL'))
+  .catch(err => console.error('Błąd połączenia z PostgreSQL:', err));
 
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS zadania (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      tytul VARCHAR(255) NOT NULL,
-      opis TEXT,
-      termin DATE,
-      priorytet INTEGER,
-      status VARCHAR(50)
-    );
+const createTablesQuery = `
+  CREATE TABLE IF NOT EXISTS zadania (
+    id SERIAL PRIMARY KEY,
+    tytul VARCHAR(255) NOT NULL,
+    opis TEXT,
+    termin DATE,
+    priorytet INTEGER,
+    status VARCHAR(50)
+  );
 
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      login VARCHAR(255) UNIQUE NOT NULL,
-      password_hash VARCHAR(255) NOT NULL,
-      rola VARCHAR(50) DEFAULT 'USER',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+  CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    login VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    rola VARCHAR(50) DEFAULT 'USER',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+`;
 
-  console.log('Baza danych SQLite zainicjalizowana');
-}
-
-initializeDatabase();
+client.query(createTablesQuery)
+  .then(() => console.log('Tabele utworzone/zaktualizowane'))
+  .catch(err => console.error('Błąd tworzenia tabel:', err));
 
 app.use(cors());
 app.use(express.json());
@@ -91,25 +92,21 @@ app.post('/register', async (req, res) => {
   }
 
   try {
-    const existingUser = await db.get('SELECT * FROM users WHERE login = ?', [login]);
-    if (existingUser) {
+    const existingUser = await client.query('SELECT * FROM users WHERE login = $1', [login]);
+    if (existingUser.rows.length > 0) {
       return res.status(400).json({ error: 'Login jest już zajęty' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const result = await db.run(
-      'INSERT INTO users (login, password_hash, rola) VALUES (?, ?, ?)',
+    const result = await client.query(
+      'INSERT INTO users (login, password_hash, rola) VALUES ($1, $2, $3) RETURNING id, login, rola',
       [login, passwordHash, 'USER']
     );
 
     res.status(201).json({ 
       message: 'Użytkownik zarejestrowany pomyślnie',
-      user: {
-        id: result.lastID,
-        login: login,
-        rola: 'USER'
-      }
+      user: result.rows[0]
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -124,10 +121,12 @@ app.post('/login', async (req, res) => {
   }
 
   try {
-    const user = await db.get('SELECT * FROM users WHERE login = ?', [login]);
-    if (!user) {
+    const result = await client.query('SELECT * FROM users WHERE login = $1', [login]);
+    if (result.rows.length === 0) {
       return res.status(400).json({ error: 'Nieprawidłowy login lub hasło' });
     }
+
+    const user = result.rows[0];
 
     const validPassword = await bcrypt.compare(password, user.password_hash);
     if (!validPassword) {
@@ -154,55 +153,45 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/zadania', authenticateToken, async (req, res) => {
-  try {
-    const zadania = await db.all('SELECT * FROM zadania ORDER BY id DESC');
-    res.json({ zadania: zadania });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+app.get('/zadania', authenticateToken, (req, res) => {
+  client.query('SELECT * FROM zadania ORDER BY id DESC')
+    .then(result => res.json({ zadania: result.rows }))
+    .catch(error => res.status(500).json({ error: error.message }));
 });
 
-app.get('/zadania/:id', authenticateToken, async (req, res) => {
+app.get('/zadania/:id', authenticateToken, (req, res) => {
   const id = req.params.id;
-  try {
-    const zadanie = await db.get('SELECT * FROM zadania WHERE id = ?', [id]);
-    if (!zadanie) {
-      res.status(404).json({ error: 'Zadanie nie znalezione' });
-      return;
-    }
-    res.json({ zadanie: zadanie });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  client.query('SELECT * FROM zadania WHERE id = $1', [id])
+    .then(result => {
+      if (result.rows.length === 0) {
+        res.status(404).json({ error: 'Zadanie nie znalezione' });
+        return;
+      }
+      res.json({ zadanie: result.rows[0] });
+    })
+    .catch(error => res.status(500).json({ error: error.message }));
 });
 
-app.post('/zadania', authenticateToken, async (req, res) => {
+app.post('/zadania', authenticateToken, (req, res) => {
   const { tytul, opis, termin, priorytet, status } = req.body;
   
   if (!tytul) {
     return res.status(400).json({ error: 'Tytuł jest wymagany.' });
   }
 
-  try {
-    const result = await db.run(
-      'INSERT INTO zadania (tytul, opis, termin, priorytet, status) VALUES (?, ?, ?, ?, ?)',
-      [tytul, opis, termin, priorytet, status]
-    );
-
-    const newZadanie = await db.get('SELECT * FROM zadania WHERE id = ?', [result.lastID]);
-
-    res.status(201).json({
-      message: 'Zadanie utworzone pomyślnie',
-      zadanieId: result.lastID,
-      zadanie: newZadanie
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  client.query(
+    'INSERT INTO zadania (tytul, opis, termin, priorytet, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [tytul, opis, termin, priorytet, status]
+  )
+  .then(result => res.status(201).json({
+    message: 'Zadanie utworzone pomyślnie',
+    zadanieId: result.rows[0].id,
+    zadanie: result.rows[0]
+  }))
+  .catch(error => res.status(500).json({ error: error.message }));
 });
 
-app.put('/zadania/:id', authenticateToken, async (req, res) => {
+app.put('/zadania/:id', authenticateToken, (req, res) => {
   const id = req.params.id;
   const { tytul, opis, termin, priorytet, status } = req.body;
 
@@ -210,40 +199,32 @@ app.put('/zadania/:id', authenticateToken, async (req, res) => {
     return res.status(400).json({ error: 'Tytuł jest wymagany.' });
   }
 
-  try {
-    await db.run(
-      'UPDATE zadania SET tytul = ?, opis = ?, termin = ?, priorytet = ?, status = ? WHERE id = ?',
-      [tytul, opis, termin, priorytet, status, id]
-    );
-
-    const updatedZadanie = await db.get('SELECT * FROM zadania WHERE id = ?', [id]);
-    
-    if (!updatedZadanie) {
+  client.query(
+    'UPDATE zadania SET tytul = $1, opis = $2, termin = $3, priorytet = $4, status = $5 WHERE id = $6 RETURNING *',
+    [tytul, opis, termin, priorytet, status, id]
+  )
+  .then(result => {
+    if (result.rows.length === 0) {
       res.status(404).json({ error: 'Zadanie do aktualizacji nie znalezione' });
       return;
     }
-
-    res.json({ message: 'Zadanie zaktualizowane pomyślnie', zadanie: updatedZadanie });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+    res.json({ message: 'Zadanie zaktualizowane pomyślnie', zadanie: result.rows[0] });
+  })
+  .catch(error => res.status(500).json({ error: error.message }));
 });
 
-app.delete('/zadania/:id', authenticateToken, async (req, res) => {
+app.delete('/zadania/:id', authenticateToken, (req, res) => {
   const id = req.params.id;
   
-  try {
-    const result = await db.run('DELETE FROM zadania WHERE id = ?', [id]);
-    
-    if (result.changes === 0) {
-      res.status(404).json({ error: 'Zadanie do usunięcia nie znalezione' });
-      return;
-    }
-
-    res.json({ message: 'Zadanie usunięte pomyślnie' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  client.query('DELETE FROM zadania WHERE id = $1 RETURNING *', [id])
+    .then(result => {
+      if (result.rows.length === 0) {
+        res.status(404).json({ error: 'Zadanie do usunięcia nie znalezione' });
+        return;
+      }
+      res.json({ message: 'Zadanie usunięte pomyślnie' });
+    })
+    .catch(error => res.status(500).json({ error: error.message }));
 });
 
 app.listen(port, () => {
