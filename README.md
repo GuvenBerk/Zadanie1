@@ -40,16 +40,6 @@ Wymagania
 - Node.js 16+
 - PostgreSQL
 
-Kroki Instalacji
-# Klonowanie repozytorium
-git clone https://github.com/GuvenBerk/Zadanie1.git
-cd Zadanie1
-
-# Instalacja zależności
-npm install
-
-# Uruchomienie serwera
-npm start
 
 🔐 Testowe Konta
 Login	             Hasło
