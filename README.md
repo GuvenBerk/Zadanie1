@@ -1,6 +1,9 @@
 Menadżer Zadań z Autoryzacją
+
 📋 Opis Projektu
+
 Zaawansowany menedżer zadań z pełnym systemem uwierzytelniania i autoryzacji użytkowników. Aplikacja umożliwia bezpieczne zarządzanie zadaniami z podziałem na użytkowników.
+
 
 🚀 Live Demo
 
