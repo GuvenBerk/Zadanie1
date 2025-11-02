@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menadżer Zadań</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="authSection" class="auth-section">
+            <h1>Menadżer Zadań</h1>
+            
+            <div class="auth-tabs">
+                <button class="tab-button active" onclick="showTab('login')">Logowanie</button>
+                <button class="tab-button" onclick="showTab('register')">Rejestracja</button>
+            </div>
+
+            <form id="loginForm" class="auth-form active">
+                <h2>Zaloguj się</h2>
+                <input type="text" id="loginLogin" placeholder="Login" required>
+                <input type="password" id="loginPassword" placeholder="Hasło" required>
+                <button type="submit">Zaloguj</button>
+            </form>
+
+            <form id="registerForm" class="auth-form">
+                <h2>Zarejestruj się</h2>
+                <input type="text" id="registerLogin" placeholder="Login" required>
+                <input type="password" id="registerPassword" placeholder="Hasło (min. 6 znaków)" required>
+                <button type="submit">Zarejestruj</button>
+            </form>
+        </div>
+
+        <div id="appSection" class="app-section" style="display: none;">
+            <div class="header">
+                <h1>Menadżer Zadań</h1>
+                <div class="user-info">
+                    Witaj, <span id="userLogin"></span>!
+                    <button onclick="logout()" class="logout-btn">Wyloguj</button>
+                </div>
+            </div>
+
+            <form id="taskForm">
+                <h2>Dodaj Nowe Zadanie</h2>
+                <input type="text" id="tytul" placeholder="Tytuł zadania" required>
+                <textarea id="opis" placeholder="Opis"></textarea>
+                <input type="date" id="termin">
+                <select id="priorytet">
+                    <option value="">Wybierz priorytet</option>
+                    <option value="1">Niski</option>
+                    <option value="2">Średni</option>
+                    <option value="3">Wysoki</option>
+                </select>
+                <select id="status">
+                    <option value="">Wybierz status</option>
+                    <option value="do zrobienia">Do zrobienia</option>
+                    <option value="w trakcie">W trakcie</option>
+                    <option value="zakończone">Zakończone</option>
+                </select>
+                <button type="submit">Zapisz Zadanie</button>
+            </form>
+
+            <div id="taskList">
+                <h2>Moje Zadania</h2>
+                <div id="tasks"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

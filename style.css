@@ -1,0 +1,138 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.auth-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+.tab-button {
+    padding: 10px 20px;
+    border: none;
+    background: #f0f0f0;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    font-size: 16px;
+    color: #333;
+}
+.tab-button.active {
+    border-bottom: 2px solid #4CAF50;
+    font-weight: bold;
+    color: #4CAF50;
+    background: #e8f5e8;
+}
+.tab-button:hover {
+    background: #e0e0e0;
+}
+.auth-form {
+    display: block;
+    margin-bottom: 30px;
+}
+.auth-form:not(.active) {
+    display: none;
+}
+.auth-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.logout-btn {
+    background: #f44336 !important;
+    padding: 5px 10px !important;
+    font-size: 14px !important;
+}
+form {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+input, textarea, select {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+    border-radius: 4px;
+}
+button:hover {
+    background-color: #45a049;
+}
+.task-item {
+    background: #f9f9f9;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 5px solid #4CAF50;
+    border: 1px solid #ddd;
+}
+.task-item h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+.task-item p {
+    margin: 0 0 10px 0;
+    color: #666;
+}
+.task-actions {
+    margin-top: 10px;
+}
+.task-actions button {
+    margin-right: 5px;
+}
+.edit-btn {
+    background-color: #008CBA !important;
+}
+.delete-btn {
+    background-color: #f44336 !important;
+}
+.error-message {
+    color: red;
+    margin: 10px 0;
+    padding: 10px;
+    background: #ffe6e6;
+    border-radius: 4px;
+}
+.success-message {
+    color: green;
+    margin: 10px 0;
+    padding: 10px;
+    background: #e6ffe6;
+    border-radius: 4px;
+}
