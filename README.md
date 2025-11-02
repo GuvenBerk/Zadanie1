@@ -16,4 +16,4 @@ Prosta aplikacja do zarządzania zadaniami.
 2. Otwórz terminal w folderze `backend`
 3. Zainstaluj zależności:
    
-https://stellular-hummingbird-42fd28.netlify.app/
+https://zadanie1-auth.onrender.com
