@@ -50,13 +50,21 @@ Hasło:123456
 
 🧪 Testowanie
 Testy Manualne
+
 1.Wejdź na stronę główną
+
 2.Zarejestruj nowe konto
+
 3.Zaloguj się
+
 4.Dodaj nowe zadanie
+
 5.Edytuj istniejące zadanie
+
 6.Sprawdź działanie wylogowania
+
 
 👥 Autor
 Guven Berk
+
 GitHub: GuvenBerk
