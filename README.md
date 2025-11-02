@@ -42,10 +42,10 @@ Wymagania
 
 
 🔐 Testowe Konta
-Login	           
-Hasło
-guven             
-123456
+Login:guven
+
+Hasło:123456
+
 
 🧪 Testowanie
 Testy Manualne
