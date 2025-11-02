@@ -6,6 +6,8 @@ Zaawansowany menedżer zadań z pełnym systemem uwierzytelniania i autoryzacji 
 
 🌐 Adres URL: https://zadanie1-auth.onrender.com
 
+
+
 ✨ Funkcjonalności
 
 🔐 System Uwierzytelniania
