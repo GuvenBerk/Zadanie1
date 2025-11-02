@@ -1,19 +1,62 @@
-# Menadżer Zadań - Aplikacja CRUD
+Menadżer Zadań z Autoryzacją
+📋 Opis Projektu
+Zaawansowany menedżer zadań z pełnym systemem uwierzytelniania i autoryzacji użytkowników. Aplikacja umożliwia bezpieczne zarządzanie zadaniami z podziałem na użytkowników.
 
-Prosta aplikacja do zarządzania zadaniami.
+🚀 Live Demo
+🌐 Adres URL: https://zadanie1-auth.onrender.com
 
-## Technologie
-- **Backend:** Node.js, Express.js, SQLite
-- **Frontend:** HTML, CSS, JavaScript
+✨ Funkcjonalności
+🔐 System Uwierzytelniania
+- Rejestracja użytkowników z walidacją danych
+- Logowanie z JWT Token
+- Hashowanie haseł (bcrypt)
+- Autoryzacja endpointów
 
-## Jak uruchomić?
+📝 Zarządzanie Zadaniami
+- Dodawanie nowych zadań
+- Edycja istniejących zadań
+- Usuwanie zadań
+- Ustawianie priorytetów (Niski, Średni, Wysoki)
+- Status zadań (Do zrobienia, W trakcie, Zakończone)
+- Terminy wykonania
 
-### Wymagania
-- Node.js (v14 lub nowszy)
+🛠️ Technologie
+- Backend: Node.js, Express.js
+- Baza Danych: PostgreSQL
+- Uwierzytelnianie: JWT (JSON Web Tokens)
+- Bezpieczeństwo: bcrypt, CORS
+- Frontend: HTML5, CSS3, JavaScript
+- Hosting: Render.com
 
-### Kroki
-1. Pobierz projekt
-2. Otwórz terminal w folderze `backend`
-3. Zainstaluj zależności:
-   
-https://zadanie1-auth.onrender.com
+📦 Instalacja i Uruchomienie
+Wymagania
+- Node.js 16+
+- PostgreSQL
+
+Kroki Instalacji
+# Klonowanie repozytorium
+git clone https://github.com/GuvenBerk/Zadanie1.git
+cd Zadanie1
+
+# Instalacja zależności
+npm install
+
+# Uruchomienie serwera
+npm start
+
+🔐 Testowe Konta
+Login	             Hasło
+guven              123456
+
+🧪 Testowanie
+Testy Manualne
+1.Wejdź na stronę główną
+2.Zarejestruj nowe konto
+3.Zaloguj się
+4.Dodaj nowe zadanie
+5.Edytuj istniejące zadanie
+6.Sprawdź działanie wylogowania
+
+👥 Autor
+Guven Berk
+GitHub: GuvenBerk
