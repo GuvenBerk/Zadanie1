@@ -66,4 +66,4 @@ Testy Manualne
 👥 Autor
 Guven Berk
 
-GitHub: GuvenBerk
+GitHub: [GuvenBerk](https://github.com/GuvenBerk)
