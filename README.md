@@ -42,7 +42,7 @@ Wymagania
 
 🔐 Testowe Konta
 
-Login:guven
+Login:guven@a.com
 
 Hasło:123456
 
